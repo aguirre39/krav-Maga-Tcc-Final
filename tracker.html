@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KMW - Acompanhamento de Emergência</title>
+    
+    <!-- Leaflet CSS: Biblioteca para mapas interativos -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- 
+      PATCH CSS: Adiciona estilos para os novos status de banner 'lost' (conexão perdida)
+      e 'anomaly' (movimento rápido detectado), conforme sugerido no relatório.
+    -->
+    <style>
+        #status-banner.lost {
+            background-color: #ffc107; /* Amarelo/Laranja */
+            color: #333;
+            font-weight: 600;
+        }
+        #status-banner.anomaly {
+            background-color: #ffc107; /* Amarelo/Laranja */
+            color: #333;
+            font-weight: 600;
+        }
+        /* (Estilos existentes do seu css/style.css devem ser mantidos) */
+    </style>
+
+</head>
+<body class="tracker-page">
+
+    <div id="map-container">
+        <div id="status-banner">Conectando à sessão de emergência...</div>
+        <div id="map"></div>
+        <button id="recenter-map-btn" aria-label="Centralizar no Usuário">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>
+        </button>
+        <div id="last-update-timestamp"></div>
+    </div>
+
+    <!-- Modal de Verificação de Segurança (Para o Contato) -->
+    <div id="security-check-modal" class="modal-overlay">
+        <div class="modal-content-custom">
+            <h2>Verificação de Segurança</h2>
+            <p>A pessoa que você está acompanhando está bem?</p>
+            <div class="modal-buttons">
+                <button id="security-check-no">🚨 NÃO</button>
+                <button id="security-check-yes">✅ SIM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Opções de Emergência (Acionado pelo Pânico) -->
+    <div id="emergency-options-modal" class="modal-overlay">
+        <div class="modal-content-custom">
+            <h2 style="color: #dc3545;">⚠️ ALERTA DE PÂNICO ACIONADO!</h2>
+            <p>A usuária sinalizou que precisa de ajuda. Considere uma ação imediata.</p>
+            <div class="modal-emergency-buttons">
+                <a href="tel:190" class="emergency-option-critical">🔴 Ligar para a Polícia (190)</a>
+                <a href="https://api.whatsapp.com/send?text=ALERTA%20DE%20EMERG%C3%8ANCIA:%20Preciso%20de%20ajuda.%20Acompanhe%20a%20localiza%C3%A7%C3%A3o%20em%20tempo%20real%20aqui:%20" id="whatsapp-share-link" target="_blank" class="emergency-option-secondary">🟠 Avisar outros contatos no WhatsApp</a>
+                <button id="close-emergency-modal" class="emergency-option-close">🔘 Manter Acompanhamento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS: Script da biblioteca de mapas -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <script>
+        // Mesma configuração do Firebase do app principal
+        const __firebase_config_str = `{
+            "apiKey": "AIzaSyBfVieHjJ9lq8sYnhn4J4AhWi4W7cx9cYk",
+            "authDomain": "krav-maga-woman.firebaseapp.com",
+            "databaseURL": "https://krav-maga-woman-default-rtdb.firebaseio.com/",
+            "projectId": "krav-maga-woman",
+            "storageBucket": "krav-maga-woman.appspot.com",
+            "messagingSenderId": "970804139681",
+            "appId": "1:970804139681:web:d27e7f113a85b9b6e82a3b"
+        }`;
+    </script>
+
+    <script type="module">
+        // ===================================================================================
+        // MÓDULO DE ACOMPANHAMENTO EM TEMPO REAL (TRACKER)
+        // Objetivo: Exibir a localização de uma usuária em um mapa,
+        // gerenciar verificações de segurança e responder a alertas de pânico.
+        // ===================================================================================
+
+        // --- 1. IMPORTAÇÕES E CONFIGURAÇÃO INICIAL ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+        // --- 2. MAPEAMENTO DOS ELEMENTOS DA INTERFACE (UI) ---
+        const statusBanner = document.getElementById('status-banner');
+        const mapDiv = document.getElementById('map');
+        const recenterMapBtn = document.getElementById('recenter-map-btn');
+        const lastUpdateTimestamp = document.getElementById('last-update-timestamp');
+        
+        const securityCheckModal = document.getElementById('security-check-modal');
+        const emergencyOptionsModal = document.getElementById('emergency-options-modal');
+        const securityCheckYesBtn = document.getElementById('security-check-yes');
+        const securityCheckNoBtn = document.getElementById('security-check-no');
+        const closeEmergencyModalBtn = document.getElementById('close-emergency-modal');
+        const whatsappShareLink = document.getElementById('whatsapp-share-link');
+
+        // --- 3. VARIÁVEIS GLOBAIS DE CONTROLE DE ESTADO ---
+        let map = null;
+        let userMarker = null;
+        let pathPolyline = null;
+        let accuracyCircle = null;
+        let lastKnownLatLng = null;
+        let lastKnownUserSafetyConfirmation = null;
+        let checkRequestListener = null; // Listener para a solicitação de verificação da usuária
+        let panicAlertSound = null; // Variável para o áudio do alerta
+
+        // --- PATCH (SEÇÃO 1): Variáveis do Watchdog ---
+        let sessionStatus = 'connecting'; // Controla o status localmente
+        const STALE_CONNECTION_THRESHOLD_MS = 60000; // 60 segundos
+        // ---------------------------------------------
+
+        // --- 4. FUNÇÕES UTILITÁRIAS E DE MANIPULAÇÃO DA UI ---
+
+        function formatTimestamp(isoString) {
+            if (!isoString) return '';
+            const date = new Date(isoString);
+            return date.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+        
+        function showUserOkNotification(userName) {
+            let notification = document.getElementById('user-ok-notification');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'user-ok-notification';
+                notification.style.position = 'absolute';
+                notification.style.top = '80px';
+                notification.style.left = '50%';
+                notification.style.transform = 'translateX(-50%) translateY(-20px)';
+                notification.style.zIndex = '1001';
+                notification.style.backgroundColor = 'rgba(40, 167, 69, 0.9)';
+                notification.style.color = 'white';
+                notification.style.padding = '10px 20px';
+                notification.style.borderRadius = '20px';
+                notification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+                notification.style.fontSize = '0.9rem';
+                notification.style.fontWeight = '500';
+                notification.style.textAlign = 'center';
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.5s ease-in-out, transform 0.5s ease-in-out';
+                document.getElementById('map-container').appendChild(notification);
+            }
+            
+            notification.textContent = `✅ ${userName} confirmou que está tudo bem (${formatTimestamp(new Date().toISOString())}).`;
+            
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(-50%) translateY(0)';
+            }, 100);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(-50%) translateY(-20px)';
+            }, 6000);
+        }
+
+        function updateStatus(text, type = 'info') {
+            if (!statusBanner) return;
+            statusBanner.textContent = text;
+            statusBanner.className = '';
+            if (type) statusBanner.classList.add(type);
+        }
+
+        function initializeMap(latLng, accuracy) {
+            if (map) return;
+            map = L.map('map', { zoomControl: false }).setView(latLng, 17);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+            const pulsingIcon = L.divIcon({ className: 'pulsing-dot-icon', iconSize: [18, 18] });
+            userMarker = L.marker(latLng, { icon: pulsingIcon }).addTo(map);
+            pathPolyline = L.polyline([], { color: '#e83e8c', weight: 6, opacity: 0.8 }).addTo(map);
+            accuracyCircle = L.circle(latLng, { radius: accuracy, weight: 1, color: '#e83e8c', fillColor: '#e83e8c', fillOpacity: 0.15 }).addTo(map);
+            lastKnownLatLng = latLng;
+        }
+
+        function updateMap(latLng, accuracy) {
+            if (!map) {
+                initializeMap(latLng, accuracy);
+            }
+            userMarker.setLatLng(latLng);
+            pathPolyline.addLatLng(latLng);
+            accuracyCircle.setLatLng(latLng);
+            accuracyCircle.setRadius(accuracy);
+            lastKnownLatLng = latLng;
+        }
+        
+        // --- 5. FUNÇÕES DE LÓGICA DE SEGURANÇA E PÂNICO ---
+
+        function playPanicSound() {
+            if (!panicAlertSound) {
+                // Cria um som de alerta simples usando a API de Áudio da Web para não depender de arquivos externos.
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                panicAlertSound = () => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // Frequência do som (A5)
+                    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.5);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                };
+            }
+            // Toca o som em loop a cada segundo.
+            // NOTA: Isso pode ser irritante; idealmente, tocaria algumas vezes e depois pararia.
+            // Por enquanto, mantemos a lógica original de loop.
+            setInterval(panicAlertSound, 1000);
+        }
+
+        function showPanicUI() {
+            emergencyOptionsModal.style.display = 'flex';
+            // updateStatus('🚨 ALERTA DE PÂNICO RECEBIDO!', 'panic'); // <- Movido para o listener onValue
+            playPanicSound();
+        }
+        
+        async function respondToSafetyCheck(sessionRef, status) {
+            securityCheckModal.style.display = 'none';
+            await update(ref(db, `emergencySessions/${sessionRef.key}/checkRequest`), {
+                status: status,
+                respondedAt: new Date().toISOString()
+            });
+
+            if (status === 'danger') {
+                await update(sessionRef, { status: 'panic_triggered_by_observer' });
+                // showPanicUI(); // <- Não é mais necessário aqui, o onValue vai detectar a mudança de status
+            }
+        }
+
+        // --- 6. LÓGICA PRINCIPAL DA APLICAÇÃO ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionId = urlParams.get('session');
+
+            if (!sessionId) {
+                updateStatus("ERRO: ID da sessão de acompanhamento não encontrado.", 'cancelled');
+                mapDiv.style.display = 'none';
+                return;
+            }
+
+            recenterMapBtn.addEventListener('click', () => {
+                if (map && lastKnownLatLng) {
+                    map.setView(lastKnownLatLng, map.getZoom() < 16 ? 17 : map.getZoom(), { animate: true, pan: { duration: 1 } });
+                }
+            });
+
+            whatsappShareLink.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(`ALERTA DE EMERGÊNCIA: Uma usuária precisa de ajuda. Acompanhe a localização em tempo real aqui: ${window.location.href}`)}`;
+
+            try {
+                const firebaseConfig = JSON.parse(__firebase_config_str);
+                const app = initializeApp(firebaseConfig);
+                const db = getDatabase(app);
+                const sessionRef = ref(db, `emergencySessions/${sessionId}`);
+
+                securityCheckYesBtn.addEventListener('click', () => respondToSafetyCheck(sessionRef, 'ok'));
+                securityCheckNoBtn.addEventListener('click', () => respondToSafetyCheck(sessionRef, 'danger'));
+                closeEmergencyModalBtn.addEventListener('click', () => { emergencyOptionsModal.style.display = 'none'; });
+
+                // =========================================================================
+                // --- PATCH (SEÇÃO 2): Listener principal (onValue) SUBSTITUÍDO ---
+                // =========================================================================
+                onValue(sessionRef, async (snapshot) => {
+                    if (!snapshot.exists()) {
+                        updateStatus("Sessão de acompanhamento não encontrada ou encerrada.", 'cancelled');
+                        if(checkRequestListener) off(checkRequestListener);
+                        sessionStatus = 'ended';
+                        return;
+                    }
+
+                    const sessionData = snapshot.val();
+                    const { 
+                        liveLocation, 
+                        status, 
+                        checkRequest, 
+                        userSafetyConfirmation, 
+                        userId,
+                        anomalyDetected, // <- Novo
+                        heartbeat // <- Novo
+                    } = sessionData;
+
+                    // --- 1. Atualização do Mapa (se houver localização) ---
+                    if (liveLocation) {
+                        const latLng = [liveLocation.latitude, liveLocation.longitude];
+                        updateMap(latLng, liveLocation.accuracy);
+                        lastUpdateTimestamp.textContent = `Última atualização: ${formatTimestamp(liveLocation.timestamp)}`;
+                        lastUpdateTimestamp.classList.add('visible');
+
+                        if (sessionData.path) {
+                            const pathCoords = Object.values(sessionData.path).map(p => [p.latitude, p.longitude]);
+                            pathPolyline.setLatLngs(pathCoords);
+                        }
+                    }
+
+                    // --- 2. Verificação de Confirmação da Usuária ("Estou bem") ---
+                    if (userSafetyConfirmation && userSafetyConfirmation !== lastKnownUserSafetyConfirmation) {
+                        lastKnownUserSafetyConfirmation = userSafetyConfirmation;
+                        
+                        let userName = "A usuária";
+                        try {
+                           const nameSnapshot = await get(ref(db, `users/${userId}/profile/displayName`));
+                           if(nameSnapshot.exists() && nameSnapshot.val()) {
+                               userName = nameSnapshot.val();
+                           }
+                        } catch (e) { console.error("Não foi possível buscar o nome da usuária"); }
+
+                        showUserOkNotification(userName);
+                    }
+
+                    // --- 3. Processamento de Status (Máquina de Estado) ---
+                    
+                    // A. Verificação de Pânico (Prioridade Máxima)
+                    if (status === 'panic_triggered_by_user' || status === 'panic_triggered_by_observer') {
+                        if (sessionStatus !== 'panic') {
+                            const panicType = sessionData.silentMode ? " (Modo Discreto)" : "";
+                            updateStatus(`🚨 ALERTA DE PÂNICO${panicType} RECEBIDO!`, 'panic');
+                            showPanicUI(); // Mostra modal e toca som
+                            sessionStatus = 'panic';
+                        }
+                    
+                    // B. Verificação de Sessão Encerrada
+                    } else if (status === 'cancelled') {
+                        if (sessionStatus !== 'ended') {
+                            updateStatus("O acompanhamento de trajeto foi encerrado pela usuária.", 'cancelled');
+                            if(checkRequestListener) off(checkRequestListener);
+                            sessionStatus = 'ended';
+                        }
+
+                    // C. Verificação de Sessão Ativa (com Watchdog)
+                    } else if (status === 'active' || status === 'connection_lost') {
+                        
+                        // WATCHDOG: Verifica se a localização (ou heartbeat) é antiga
+                        const lastUpdate = new Date(heartbeat || liveLocation?.timestamp).getTime();
+                        const timeDiff = Date.now() - lastUpdate;
+
+                        if (timeDiff > STALE_CONNECTION_THRESHOLD_MS) {
+                            if (sessionStatus !== 'lost') {
+                                updateStatus("⚠️ Conexão perdida. Aguardando sinal da usuária...", 'lost');
+                                sessionStatus = 'lost';
+                            }
+                        } else {
+                            // Conexão está OK e ativa
+                            if (sessionStatus !== 'tracking') {
+                                updateStatus(`Acompanhando em tempo real...`, 'tracking');
+                                sessionStatus = 'tracking';
+                            }
+
+                            // VERIFICAÇÃO DE ANOMALIA (somente se a conexão estiver OK)
+                            if (anomalyDetected && sessionStatus === 'tracking') {
+                                 // Mostra um status diferente se houver anomalia, mas não pânico
+                                 updateStatus(`⚠️ ACOMPANHANDO (Movimento rápido detectado!)`, 'anomaly');
+                            }
+                        }
+                    }
+
+                    // --- 4. Reação a Solicitações de Verificação ("Você está bem?") ---
+                    if (sessionStatus !== 'panic') { // Não mostra o modal de verificação se o pânico já foi acionado
+                        if (checkRequest && checkRequest.status === 'pending') {
+                            securityCheckModal.style.display = 'flex';
+                        } else {
+                            securityCheckModal.style.display = 'none';
+                        }
+                    } else {
+                        securityCheckModal.style.display = 'none'; // Garante que suma se o pânico for ativado
+                    }
+
+                }, (error) => {
+                    console.error("Erro ao conectar ao Firebase:", error);
+                    updateStatus("Erro de conexão com o servidor de rastreamento.", 'cancelled');
+                    sessionStatus = 'error';
+                });
+                // =========================================================================
+                // --- FIM DO PATCH (SEÇÃO 2) ---
+                // =========================================================================
+
+            } catch (e) {
+                console.error("Erro ao inicializar:", e);
+                updateStatus("Ocorreu um erro crítico ao carregar a página.", 'cancelled');
+            }
+        });
+    </script>
+</body>
+</html>

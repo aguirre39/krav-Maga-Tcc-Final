@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krav Maga Woman</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+
+    <!-- ====== LOADER GLOBAL ====== -->
+    <div id="loader" class="loader" style="display: none;" role="status" aria-live="polite">
+        <span class="visually-hidden">Carregando...</span>
+    </div>
+
+    <!-- ====== ESTRUTURA DOS MODAIS ====== -->
+    <!-- Modal: Notificações Genéricas -->
+    <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="messageModalTitle">Notificação</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="messageText"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Link de Rastreamento de Emergência -->
+    <div class="modal fade" id="emergencyLinkModal" tabindex="-1" aria-labelledby="emergencyLinkModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="emergencyLinkModalTitle"><i class="fas fa-share-alt me-2"></i>Compartilhe seu Trajeto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Seu link de acompanhamento está pronto.</strong> Compartilhe-o manualmente com seus contatos de confiança para que possam seguir seu trajeto em tempo real.</p>
+                    <div class="input-group">
+                        <input type="text" id="trackingLinkInput" class="form-control" readonly aria-label="Link de Rastreamento">
+                        <button class="btn btn-outline-secondary" type="button" id="copyLinkButton"><i class="fas fa-copy me-2"></i>Copiar</button>
+                        <button class="btn btn-success" type="button" id="shareButton"><i class="fas fa-share-alt me-2"></i>Compartilhar</button>
+                    </div>
+                    <small id="copyStatus" class="form-text text-muted-light mt-1"></small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Resposta da Verificação de Segurança (do Contato) -->
+    <div class="modal fade" id="safetyCheckResponseModal" tabindex="-1" aria-labelledby="safetyCheckResponseModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" id="safetyCheckResponseModalHeader">
+                    <h5 class="modal-title" id="safetyCheckResponseModalTitle">Resposta do Contato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i id="safetyCheckResponseModalIcon" class="fas fa-3x mb-3"></i>
+                    <p id="safetyCheckResponseModalText" class="lead"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- NOVO MODAL: Verificação de Segurança da Usuária -->
+    <div class="modal fade" id="userSafetyCheckModal" tabindex="-1" aria-labelledby="userSafetyCheckModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userSafetyCheckModalLabel"><i class="fas fa-question-circle me-2"></i>Verificação de Segurança</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="lead text-center">Você está bem?</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" id="userSafetyCheckNo" class="btn btn-danger btn-lg me-3"><i class="fas fa-exclamation-triangle me-2"></i> Não</button>
+                    <button type="button" id="userSafetyCheckYes" class="btn btn-success btn-lg"><i class="fas fa-check-circle me-2"></i> Sim</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Inserir Nome de Exibição (Perfil) -->
+    <div class="modal fade" id="nameInputModal" tabindex="-1" aria-labelledby="nameInputModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nameInputModalLabel">Como gostaria de ser chamada?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="nameInputField" class="form-control" placeholder="Digite seu nome ou apelido" aria-label="Nome de exibição">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" id="saveNameButton" class="btn btn-primary">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Chat do Instrutor Virtual -->
+    <div class="modal fade" id="instructorChatModal" tabindex="-1" aria-labelledby="instructorChatModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="d-flex align-items-center">
+                        <img src="image/logo_krav_maga_site.png" alt="Avatar Mestre K" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                        <div>
+                            <h5 class="modal-title mb-0 fs-6" id="instructorChatModalLabel">Mestre K (Online)</h5>
+                            <small class="text-muted-light">Instrutor Virtual de Krav Maga</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div id="instructorChatMessages" class="modal-body chat-messages d-flex flex-column p-3">
+                    <!-- Mensagens do chat do instrutor aparecerão aqui -->
+                </div>
+                <div class="modal-footer flex-column">
+                     <div id="instructorQuickReplyContainer" class="quick-reply-container">
+                             <!-- Botões de resposta rápida aparecerão aqui -->
+                     </div>
+                    <div class="chat-input-group w-100">
+                        <input type="text" id="instructorChatInput" class="form-control" placeholder="Pergunte algo ao Mestre K...">
+                        <button id="sendInstructorChatButton" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== CABEÇALHO DA APLICAÇÃO ====== -->
+    <header id="appHeader" style="display: none;">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <button id="themeToggleMobile" class="btn btn-outline-secondary d-lg-none ms-auto me-2" aria-label="Alternar tema">
+                    <i class="fas fa-sun"></i>
+                </button>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu" aria-controls="mobileMenu" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mobileMenu">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                        <li class="nav-item"><a href="#" class="nav-link navigate-to" data-page="dashboard-page">Início</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#instructorChatModal">Instrutor Virtual</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link navigate-to" data-page="tips-page">Dicas</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Técnicas <i class="fas fa-chevron-down fa-xs ms-1"></i>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#" class="dropdown-item navigate-to" data-page="techniques-white-page">Faixa Branca</a></li>
+                                <li><a href="#" class="dropdown-item navigate-to" data-page="techniques-yellow-page">Faixa Amarela</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item"><a href="#" class="nav-link navigate-to" data-page="quiz-page">Questionário</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Mais <i class="fas fa-chevron-down fa-xs ms-1"></i>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#" class="dropdown-item navigate-to" data-page="view-notes-page">Ver Anotações</a></li>
+                                <li><a href="#" class="dropdown-item navigate-to" data-page="scenarios-page">Cenários</a></li>
+                                <li><a href="#" class="dropdown-item navigate-to" data-page="references-page">Referências</a></li>
+                                <li><a href="#" class="dropdown-item navigate-to" data-page="psychology-page">Psicologia</a></li>
+                                <li><a href="#" class="dropdown-item navigate-to" data-page="warnings-page">Sinais de Alerta</a></li>
+                                <li><a href="#" class="dropdown-item navigate-to" data-page="support-page">Suporte</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item"><a href="#" id="logoutButton" class="nav-link">Sair</a></li>
+                        <li class="nav-item d-none d-lg-block">
+                            <button id="themeToggle" class="btn btn-outline-secondary ms-2" aria-label="Alternar tema">
+                                <i class="fas fa-sun"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+      <!-- ====== CONTEÚDO PRINCIPAL (PÁGINAS) ====== -->
+    <main id="appContent" class="container mt-4 mb-5">
+        
+        <!-- Página: Autenticação -->
+        <section id="auth-page" class="page-section active align-items-center justify-content-center p-0">
+            <div class="w-100" style="max-width: 450px;">
+                <img src="image/logo_krav_maga_site.png" alt="Krav Maga Woman Logo" class="auth-page-logo img-fluid logo-pulse-animation" onerror="this.style.display='none'; this.alt='Logo não pôde ser carregado';">
+
+                <form id="loginForm" class="mb-3">
+                    <div class="mb-3">
+                        <label for="loginEmail" class="form-label">Email</label>
+                        <input type="email" id="loginEmail" name="loginEmail" required class="form-control" placeholder="seuemail@exemplo.com" autocomplete="email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Senha</label>
+                        <input type="password" id="loginPassword" name="loginPassword" required class="form-control" placeholder="********" autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Entrar</button>
+                </form>
+                <p class="text-center">
+                    Não tem uma conta? <a href="#" id="showRegister" class="fw-medium">Cadastre-se</a>
+                </p>
+
+                <form id="registerForm" style="display: none;">
+                    <div class="mb-3">
+                        <label for="registerEmail" class="form-label">Email</label>
+                        <input type="email" id="registerEmail" name="registerEmail" required class="form-control" placeholder="seuemail@exemplo.com" autocomplete="email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerPassword" class="form-label">Senha</label>
+                        <input type="password" id="registerPassword" name="registerPassword" required class="form-control" placeholder="Crie uma senha forte (mín. 6 caracteres)" autocomplete="new-password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerConfirmPassword" class="form-label">Confirmar Senha</label>
+                        <input type="password" id="registerConfirmPassword" name="registerConfirmPassword" required class="form-control" placeholder="Confirme sua senha" autocomplete="new-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
+                </form>
+                <p id="switchToLogin" class="text-center" style="display: none;">
+                    Já tem uma conta? <a href="#" id="showLogin" class="fw-medium">Faça login</a>
+                </p>
+            </div>
+        </section>
+
+        <!-- Página: Dashboard -->
+        <section id="dashboard-page" class="page-section">
+            <div class="text-center mb-4">
+                <img src="image/logo_krav_maga_site.png" alt="Krav Maga Woman Logo" class="dashboard-logo img-fluid logo-pulse-animation" onerror="this.style.display='none'; this.alt='Logo não pôde ser carregado';">
+            </div>
+            <h1 id="dashboardWelcomeMessage" class="mb-3 h2" style="color: var(--bs-primary);">
+                Bem-vinda ao Krav Maga Woman<span id="displayNameSpan"></span>!
+                <small class="ms-1 fs-6 fw-normal" id="displayNamePromptContainer" style="display: none;">
+                    <a href="#" id="displayNamePromptLink" class="text-decoration-none" style="color: var(--bs-secondary); font-size: 0.8em;">(Como gostaria de ser chamada?)</a>
+                </small>
+            </h1>
+            <p class="lead mb-4">Explore os recursos abaixo para fortalecer sua segurança e conhecimento.</p>
+            
+            <div class="emergency-zone">
+                <h2 class="h5 fw-semibold mb-2"><i class="fas fa-shield-alt me-2"></i>Acompanhe seu Trajeto</h2>
+                <p class="mb-2 small">Sentindo-se insegura? Inicie o monitoramento e compartilhe seu percurso em tempo real com um contato de confiança.</p>
+                <div class="d-grid gap-2">
+                    <button id="emergencyButton" class="btn btn-danger btn-lg emergency-button-pulse-animation">
+                        <i class="fas fa-map-marker-alt me-2"></i> INICIAR ACOMPANHAMENTO
+                    </button>
+                    <button id="checkContactButton" class="btn btn-secondary" style="display: none;">
+                        <i class="fas fa-user-check me-2"></i> VERIFICAR CONTATO
+                    </button>
+                </div>
+                <p id="emergencyStatus" class="emergency-status d-none"></p>
+                <p class="text-muted-custom small mt-2">Para sua segurança, certifique-se que os serviços de localização estão ativos.</p>
+                 <div class="text-muted-custom small mt-3" style="opacity: 0.9;">
+                    <p><strong>Como Funciona:</strong></p>
+                    <ul class="list-disc small">
+                        <li>Ao iniciar, um link para um mapa privado será gerado para você compartilhar.</li>
+                        <li>Seu contato verá seu deslocamento em tempo real.</li>
+                        <li>Durante o trajeto, use o botão <strong>"Verificar Contato"</strong> para enviar uma pergunta ao seu contato, confirmando que ele está atento e que você está bem.</li>
+                        <li>Pressione <strong>"Encerrar"</strong> para finalizar o acompanhamento.</li>
+                    </ul>
+                </div>
+                <div class="mt-4">
+                    <h3 class="h6 fw-semibold mb-2">Contatos de Confiança (para seu controle):</h3>
+                    <div id="emergencyContactsForm">
+                        <div id="contactsList" class="space-y-2 mb-2"></div>
+                        <div class="row g-2">
+                            <div class="col-sm">
+                                <input type="text" id="contactName" placeholder="Nome do Contato" class="form-control form-control-sm" aria-label="Nome do Contato de Confiança">
+                            </div>
+                            <div class="col-sm">
+                                <input type="text" id="contactDetail" placeholder="(11) 98765-4321 ou maria@email.com" class="form-control form-control-sm" aria-label="Contato (Telefone ou E-mail)" inputmode="tel" aria-describedby="contactHelp">
+                                <div class="invalid-feedback small">Formato inválido. Use um e-mail ou telefone com DDD.</div>
+                                <div id="contactHelp" class="form-text small">Use um e-mail válido ou um telefone com 10/11 dígitos.</div>
+                            </div>
+                            <div class="col-sm-auto">
+                                <button id="addContactButton" class="btn btn-secondary btn-sm w-100"><i class="fas fa-plus me-2" aria-hidden="true"></i>Adicionar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-4">
+                <div class="col">
+                    <div class="card h-100" role="button" tabindex="0" data-bs-toggle="modal" data-bs-target="#instructorChatModal">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-user-graduate me-2" aria-hidden="true"></i>Instrutor Virtual</h2>
+                            <p class="card-text small text-muted-light">Tire suas dúvidas sobre técnicas e treinos com nosso instrutor IA.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 navigate-to" data-page="tips-page" role="button" tabindex="0">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-lightbulb me-2" aria-hidden="true"></i>Dicas de Defesa Pessoal</h2>
+                            <p class="card-text small text-muted-light">Orientações práticas para diversas situações de risco.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 navigate-to" data-page="techniques-white-page" role="button" tabindex="0">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-user-ninja me-2" aria-hidden="true"></i>Técnicas: Faixa Branca</h2>
+                            <p class="card-text small text-muted-light">Vídeos e instruções das técnicas iniciais.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 navigate-to" data-page="techniques-yellow-page" role="button" tabindex="0">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-user-ninja me-2" aria-hidden="true"></i>Técnicas: Faixa Amarela</h2>
+                            <p class="card-text small text-muted-light">Técnicas intermediárias, contra-ataques e liberações.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 navigate-to" data-page="quiz-page" role="button" tabindex="0">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-question-circle me-2" aria-hidden="true"></i>Quiz Interativo</h2>
+                            <p class="card-text small text-muted-light">Teste seus conhecimentos sobre as técnicas.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 navigate-to" data-page="view-notes-page" role="button" tabindex="0">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-sticky-note me-2" aria-hidden="true"></i>Ver Anotações</h2>
+                            <p class="card-text small text-muted-light">Acesse e edite suas anotações de treino.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 navigate-to" data-page="scenarios-page" role="button" tabindex="0">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-tasks me-2" aria-hidden="true"></i>Análise de Cenários</h2>
+                            <p class="card-text small text-muted-light">Simulações de situações reais e como aplicar as técnicas.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 navigate-to" data-page="references-page" role="button" tabindex="0">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-book-open me-2" aria-hidden="true"></i>Arquivos de Referência</h2>
+                            <p class="card-text small text-muted-light">Materiais complementares sobre Krav Maga e violência de gênero.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 navigate-to" data-page="psychology-page" role="button" tabindex="0">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-brain me-2" aria-hidden="true"></i>Psicologia da Defesa</h2>
+                            <p class="card-text small text-muted-light">Controle do medo, tomada de decisões e autocontrole.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 navigate-to" data-page="warnings-page" role="button" tabindex="0">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-flag me-2" aria-hidden="true"></i>Sinais de Alerta</h2>
+                            <p class="card-text small text-muted-light">Reconheça comportamentos abusivos e relacionamentos tóxicos.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 navigate-to" data-page="support-page" role="button" tabindex="0">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-hands-helping me-2" aria-hidden="true"></i>Assistência e Suporte</h2>
+                            <p class="card-text small text-muted-light">Canais de denúncia e acolhimento no Brasil.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="communityChatContainer" class="community-chat-card mt-5 mb-4">
+                <div class="card-body p-3">
+                    <h2 class="h5 mb-3" style="color: var(--bs-primary);"><i class="fas fa-comments me-2"></i>Espaço KMW</h2>
+                    <div id="communityChatMessagesArea" class="mb-3">
+                        <p class="text-muted-light small p-2 text-center">Carregando mensagens...</p>
+                    </div>
+                    <div class="chat-input-group">
+                        <input type="text" id="communityChatInput" class="form-control" placeholder="Digite sua mensagem..." aria-label="Mensagem do chat da comunidade">
+                        <button id="sendCommunityChatMessageButton" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i> Enviar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+<!-- ======================= INÍCIO DAS DICAS (VERSÃO APRIMORADA) ======================= -->
+<section id="tips-page" class="page-section container">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold" style="color: var(--bs-primary);">Guia Estratégico de Segurança Pessoal</h1>
+        <p class="lead" style="color: var(--custom-text-muted-light);">A prevenção é sua maior ferramenta de autodefesa. Incorpore estes hábitos para minimizar riscos e fortalecer sua autoconfiança no dia a dia.</p>
+    </div>
+
+    <!-- Layout em Grade (Grid) -->
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+
+        <!-- Card 1: Consciência Situacional -->
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <img src="https://placehold.co/600x300/db2777/ffffff?text=Consciência+Situacional+%2B+%F0%9F%91%81%EF%B8%8F" class="card-img-top" alt="Ícone de olho observando o ambiente urbano">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="tip-icon-wrapper me-3">
+                            <i class="fa-solid fa-street-view fa-lg"></i>
+                        </div>
+                        <h2 class="card-title h5 fw-bold">Consciência Situacional: Em Ambientes Públicos</h2>
+                    </div>
+                    <ul class="list-unstyled technique-description-text mb-0">
+                        <li><i class="fa-solid fa-person-rays"></i><strong>Postura Confiante:</strong> Evite o "visual de vítima" (olhar baixo, distração com celular). Mantenha a cabeça erguida e projete confiança; isso naturalmente inibe abordagens.</li>
+                        <li><i class="fa-solid fa-ear-listen"></i><strong>Sentidos em Alerta:</strong> Limite o uso de fones de ouvido. Esteja ciente dos sons ao redor — passos, conversas, veículos. Sua audição é um radar de proximidade.</li>
+                        <li><i class="fa-solid fa-eye"></i><strong>Mapeamento Periférico:</strong> Utilize reflexos em vitrines e espelhos para monitorar o entorno sem precisar olhar diretamente para trás. Mantenha uma visão 360° do ambiente.</li>
+                        <li><i class="fa-solid fa-brain"></i><strong>Confie na Intuição:</strong> Se uma situação ou pessoa gerar desconforto, não ignore. Atravesse a rua, entre em um estabelecimento ou mude seu trajeto. Sua intuição é seu sistema de alerta primário.</li>
+                        <li><i class="fa-solid fa-shuffle"></i><strong>Quebre a Rotina:</strong> Evite trajetos e horários previsíveis. Pequenas variações em sua rotina dificultam o planejamento de ações por parte de observadores mal-intencionados.</li>
+                         <li><i class="fa-solid fa-mobile-screen-button"></i><strong>Discrição é Segurança:</strong> Mantenha celulares, joias e outros objetos de valor guardados. A ostentação atrai atenção indesejada e aumenta os riscos.</li>
+                        <li><i class="fa-solid fa-map-location-dot"></i><strong>Planejamento de Rota:</strong> Antes de sair, especialmente para locais novos, planeje seu caminho. Opte por ruas bem iluminadas e movimentadas, evitando áreas desertas.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Segurança Residencial -->
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <img src="https://placehold.co/600x300/db2777/ffffff?text=Segurança+Residencial+%2B+%F0%9F%94%92" class="card-img-top" alt="Casa com um escudo de proteção">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="tip-icon-wrapper me-3">
+                            <i class="fa-solid fa-shield-heart fa-lg"></i>
+                        </div>
+                        <h2 class="card-title h5 fw-bold">Segurança Residencial: Protegendo Seu Lar</h2>
+                    </div>
+                    <ul class="list-unstyled technique-description-text mb-0">
+                        <li><i class="fa-solid fa-door-closed"></i><strong>Protocolo de Porta:</strong> Sempre utilize o olho mágico ou interfone antes de abrir. Para prestadores de serviço, exija a credencial e confirme a visita com a empresa por telefone.</li>
+                        <li><i class="fa-solid fa-box-open"></i><strong>Recebimento Seguro:</strong> Ao receber entregas, interaja com o entregador na área externa ou portaria. Jamais permita a entrada para uma simples entrega.</li>
+                         <li><i class="fa-solid fa-house-lock"></i><strong>Plano de Fuga Interno:</strong> Defina um "cômodo seguro" que possa ser trancado por dentro. Mantenha um celular carregado neste local para contatar a polícia em caso de invasão.</li>
+                        <li><i class="fa-solid fa-image-slash"></i><strong>Discrição Digital:</strong> Evite anunciar viagens ou ausências prolongadas nas redes sociais. Poste fotos e detalhes sobre suas férias apenas quando retornar.</li>
+                        <li><i class="fa-solid fa-lightbulb"></i><strong>Iluminação Estratégica:</strong> Mantenha as áreas externas, especialmente entradas e janelas, bem iluminadas. Luzes com sensores de movimento são excelentes dissuasores.</li>
+                        <li><i class="fa-solid fa-users-viewfinder"></i><strong>Vizinhança Colaborativa:</strong> Construa uma relação de confiança com seus vizinhos. Uma comunidade atenta é uma das formas mais eficazes de vigilância.</li>
+                        <li><i class="fa-solid fa-lock"></i><strong>Fortaleça os Acessos:</strong> Invista em fechaduras de alta qualidade para portas e janelas. Considere o uso de películas de segurança ou grades em pontos mais vulneráveis.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Proteção em Movimento -->
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <img src="https://placehold.co/600x300/db2777/ffffff?text=Proteção+em+Movimento+%2B+%F0%9F%9A%95" class="card-img-top" alt="Carro em movimento com um escudo">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="tip-icon-wrapper me-3">
+                            <i class="fa-solid fa-route fa-lg"></i>
+                        </div>
+                        <h2 class="card-title h5 fw-bold">Proteção em Movimento: No Transporte</h2>
+                    </div>
+                    <ul class="list-unstyled technique-description-text mb-0">
+                        <li><i class="fa-solid fa-car-side"></i><strong>Dentro do Carro:</strong> Portas travadas e vidros fechados são a regra, especialmente em trânsito lento ou semáforos. Mantenha distância do veículo à frente para garantir uma rota de fuga.</li>
+                        <li><i class="fa-solid fa-bus-simple"></i><strong>Transporte Público:</strong> Prefira vagões e assentos próximos ao condutor ou em áreas mais movimentadas. Mantenha bolsas e mochilas à sua frente e em contato com seu corpo.</li>
+                        <li><i class="fa-solid fa-taxi"></i><strong>Transporte por App:</strong> Sempre confira placa, modelo e motorista antes de embarcar. Compartilhe sua rota em tempo real com um contato de confiança e sente-se no banco traseiro.</li>
+                        <li><i class="fa-solid fa-key"></i><strong>Chegada e Saída:</strong> Tenha suas chaves em mãos antes de chegar ao seu destino. Observe o entorno ao desembarcar e dirija-se rapidamente para um local seguro.</li>
+                         <li><i class="fa-solid fa-briefcase"></i><strong>Cuidado com Pertences:</strong> Use bolsas transpassadas ao corpo e evite carteiras ou celulares no bolso de trás. Mantenha seus pertences sempre no seu campo de visão.</li>
+                        <li><i class="fa-solid fa-credit-card"></i><strong>Caixas Eletrônicos:</strong> Opte por caixas em locais de grande circulação (shoppings, supermercados). Fique atenta a pessoas suspeitas e nunca aceite ajuda de estranhos.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Segurança Digital -->
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <img src="https://placehold.co/600x300/db2777/ffffff?text=Privacidade+Online+%2B+%F0%9F%94%91" class="card-img-top" alt="Smartphone com um cadeado flutuando sobre ele">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="tip-icon-wrapper me-3">
+                            <i class="fa-solid fa-user-secret fa-lg"></i>
+                        </div>
+                        <h2 class="card-title h5 fw-bold">Segurança Digital e Social: Proteja Sua Imagem</h2>
+                    </div>
+                    <ul class="list-unstyled technique-description-text mb-0">
+                        <li><i class="fa-solid fa-user-lock"></i><strong>Privacidade nas Redes:</strong> Restrinja seu perfil para "apenas amigos" e audite regularmente quem tem acesso às suas publicações. Pense duas vezes antes de compartilhar dados sensíveis.</li>
+                        <li><i class="fa-solid fa-comments"></i><strong>Encontros Online:</strong> Os primeiros encontros devem ocorrer em locais públicos e movimentados. Informe sempre um contato de confiança sobre seus planos.</li>
+                        <li><i class="fa-solid fa-location-dot-slash"></i><strong>Controle a Geolocalização:</strong> Desative a marcação automática de localização em suas fotos e posts. Evite compartilhar sua localização exata em tempo real.</li>
+                        <li><i class="fa-solid fa-circle-question"></i><strong>Desconfie de Pedidos:</strong> Seja cética com pedidos de dinheiro, fotos ou informações pessoais, mesmo que venham de perfis conhecidos. Golpes de clonagem são comuns.</li>
+                         <li><i class="fa-solid fa-key"></i><strong>Senhas Robustas e 2FA:</strong> Crie senhas únicas e complexas. Ative a "Autenticação de Dois Fatores" (2FA) em todas as contas para uma camada extra de proteção crucial.</li>
+                        <li><i class="fa-solid fa-fish-fins"></i><strong>Atenção ao Phishing:</strong> Não clique em links ou baixe anexos de e-mails suspeitos. Verifique sempre o remetente e desconfie de ofertas "boas demais para ser verdade".</li>
+                        <li><i class="fa-solid fa-wifi-slash"></i><strong>Evite Wi-Fi Público:</strong> Redes abertas são inseguras. Evite realizar transações bancárias ou acessar contas importantes quando conectado a uma rede Wi-Fi pública.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card 5: Preparação para Emergências -->
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <img src="https://placehold.co/600x300/db2777/ffffff?text=Preparação+e+Resposta+%2B+%E2%9A%A0%EF%B8%8F" class="card-img-top" alt="Kit de primeiros socorros e itens de emergência">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="tip-icon-wrapper me-3">
+                            <i class="fa-solid fa-kit-medical fa-lg"></i>
+                        </div>
+                        <h2 class="card-title h5 fw-bold">Preparação e Resposta em Emergências</h2>
+                    </div>
+                    <ul class="list-unstyled technique-description-text mb-0">
+                        <li><i class="fa-solid fa-address-book"></i><strong>Contatos Rápidos:</strong> Mantenha uma lista de emergência (família, polícia, socorro) acessível na tela de bloqueio do seu celular e também em um local físico.</li>
+                        <li><i class="fa-solid fa-user-secret"></i><strong>Código de Segurança:</strong> Estabeleça uma palavra-chave ou frase com pessoas de confiança para sinalizar discretamente que você está em perigo.</li>
+                        <li><i class="fa-solid fa-hand-holding-medical"></i><strong>Noções de Primeiros Socorros:</strong> Conhecimentos básicos podem ser decisivos. Considere fazer um curso para aprender a agir em situações de acidentes.</li>
+                        <li><i class="fa-solid fa-briefcase-medical"></i><strong>Kit de Emergência:</strong> Mantenha um kit portátil com o essencial: power bank, cópias de documentos, dinheiro e medicamentos de uso contínuo.</li>
+                        <li><i class="fa-solid fa-user-shield"></i><strong>Treinamento de Autodefesa:</strong> Cursos de defesa pessoal não ensinam a brigar, mas a se defender. Aumentam a confiança e a capacidade de reação sob pressão.</li>
+                        <li><i class="fa-solid fa-bullhorn"></i><strong>Grupos de Alerta:</strong> Participe de grupos de segurança do seu bairro ou condomínio. A informação compartilhada é uma ferramenta valiosa de prevenção.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card 6: Prevenção Contra Assédio -->
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <img src="https://placehold.co/600x300/db2777/ffffff?text=Combate+ao+Assédio+%2B+%E2%9A%94%EF%B8%8F" class="card-img-top" alt="Duas mãos formando um sinal de pare">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="tip-icon-wrapper me-3">
+                            <i class="fa-solid fa-handshake-angle fa-lg"></i>
+                        </div>
+                        <h2 class="card-title h5 fw-bold">Conscientização e Prevenção Contra Assédio</h2>
+                    </div>
+                    <ul class="list-unstyled technique-description-text mb-0">
+                        <li><i class="fa-solid fa-circle-info"></i><strong>Identifique o Assédio:</strong> Compreenda as diferentes formas de assédio (verbal, físico, moral, sexual) para reconhecê-lo imediatamente quando ocorrer.</li>
+                        <li><i class="fa-solid fa-hand"></i><strong>Imponha Limites:</strong> Comunique seus limites de forma clara, firme e assertiva. Um "não" direto é seu direito e não requer justificativas.</li>
+                        <li><i class="fa-solid fa-users"></i><strong>Busque Apoio Imediato:</strong> Em público, aproxime-se de outras pessoas (famílias, seguranças) e peça ajuda diretamente. A intervenção de terceiros pode cessar a ação.</li>
+                        <li><i class="fa-solid fa-camera-retro"></i><strong>Documente e Denuncie:</strong> Se for seguro, registre o ocorrido (mensagens, fotos, áudios). A denúncia formal às autoridades ou à empresa é fundamental para a responsabilização.</li>
+                        <li><i class="fa-solid fa-heart-circle-exclamation"></i><strong>A Culpa Não é Sua:</strong> Lembre-se sempre: a responsabilidade pelo assédio é exclusiva do assediador. Não se culpe nem minimize a situação.</li>
+                        <li><i class="fa-solid fa-building-shield"></i><strong>Conheça Seus Recursos:</strong> Pesquise e salve os contatos de centros de apoio, delegacias da mulher e linhas de ajuda disponíveis em sua região. Eles existem para te apoiar.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- Fim do .row -->
+</section>
+<!-- ======================= FIM DAS DICAS ======================= -->
+
+
+        <!-- Página: Técnicas Faixa Branca -->
+        <section id="techniques-white-page" class="page-section">
+            <h1 class="h2 mb-4" style="color: var(--bs-primary);">Técnicas – Faixa Branca</h1>
+            <div id="techniquesWhiteList" class="vstack gap-5">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title h5 mb-3">Técnica 1: Postura de Combate e Movimentação</h2>
+                        <div class="aspect-video mb-3">
+                            <iframe src="https://www.youtube.com/embed/G_j-tX2K58s" title="Vídeo da Técnica 1: Postura de Combate e Movimentação" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                        <p class="technique-description-text">A postura de combate (ou guarda) é a base para todas as técnicas de defesa e ataque. Mantenha os pés afastados na largura dos ombros, um pé ligeiramente à frente do outro (pé dominante atrás para destros). Joelhos levemente flexionados para absorver impacto e permitir movimentação rápida. O peso do corpo deve estar equilibrado entre as pernas. Mãos levantadas protegendo o rosto e o tronco, cotovelos próximos ao corpo. Olhar focado no agressor, mas com consciência do ambiente (visão periférica). A movimentação deve ser fluida, sem cruzar as pernas, mantendo sempre a base e a guarda.</p>
+                        <div>
+                            <label for="notes-technique-white-1" class="form-label small">Suas Anotações:</label>
+                            <textarea id="notes-technique-white-1" data-technique-id="white_001" rows="3" class="form-control form-control-sm notes-area" placeholder="Ex: Lembrar de manter o queixo baixo..."></textarea>
+                            <button class="btn btn-sm btn-secondary mt-2 save-note-button" data-technique-id="white_001"><i class="fas fa-save me-2" aria-hidden="true"></i>Salvar Anotação</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title h5 mb-3">Técnica 2: Soco Direto (Jab e Direto)</h2>
+                        <div class="aspect-video mb-3">
+                           <iframe src="https://www.youtube.com/embed/z434y1Gz-A" title="Vídeo da Técnica 2: Soco Direto (Jab e Direto)" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                        <p class="technique-description-text">O soco direto é um dos golpes mais rápidos e eficientes. O Jab é desferido com a mão da frente, visando distrair ou medir a distância. O Direto é desferido com a mão de trás, com maior potência, utilizando a rotação do quadril e do ombro. Em ambos, o punho deve girar no momento do impacto (posição horizontal), e o braço deve retornar rapidamente à posição de guarda. Mantenha o cotovelo próximo ao corpo durante a trajetória do soco para proteção.</p>
+                        <div>
+                            <label for="notes-technique-white-2" class="form-label small">Suas Anotações:</label>
+                            <textarea id="notes-technique-white-2" data-technique-id="white_002" rows="3" class="form-control form-control-sm notes-area" placeholder="Ex: Focar na rotação do quadril para o direto..."></textarea>
+                            <button class="btn btn-sm btn-secondary mt-2 save-note-button" data-technique-id="white_002"><i class="fas fa-save me-2" aria-hidden="true"></i>Salvar Anotação</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title h5 mb-3">Técnica 3: Defesa Simples de Soco Direto (Bloqueio 360 Externo)</h2>
+                        <div class="aspect-video mb-3">
+                            <iframe src="https://www.youtube.com/embed/sAUKpC52d_4" title="Vídeo da Técnica 3: Defesa Simples de Soco Direto (Bloqueio 360 Externo)" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                        <p class="technique-description-text">Contra um soco direto vindo em direção ao rosto, utilize o antebraço para desviar o golpe para fora da linha do seu corpo. Se o soco vier da direita do agressor (seu lado esquerdo), use seu braço esquerdo. O movimento é circular, partindo da guarda, subindo e empurrando o braço do agressor para o seu lado externo. Mantenha a outra mão em guarda. O movimento deve ser acompanhado de um pequeno passo lateral ou para trás para sair da linha de ataque e criar ângulo para um contra-ataque imediato.</p>
+                        <div>
+                            <label for="notes-technique-white-3" class="form-label small">Suas Anotações:</label>
+                            <textarea id="notes-technique-white-3" data-technique-id="white_003" rows="3" class="form-control form-control-sm notes-area" placeholder="Ex: Praticar o timing do bloqueio e contra-ataque..."></textarea>
+                            <button class="btn btn-sm btn-secondary mt-2 save-note-button" data-technique-id="white_003"><i class="fas fa-save me-2" aria-hidden="true"></i>Salvar Anotação</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Página: Técnicas Faixa Amarela -->
+        <section id="techniques-yellow-page" class="page-section">
+            <h1 class="h2 mb-4" style="color: var(--bs-primary);">Técnicas – Faixa Amarela</h1>
+            <div id="techniquesYellowList" class="vstack gap-5">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title h5 mb-3">Técnica 1: Liberação de Agarrão de Pulso (Mesmo Lado)</h2>
+                        <div class="aspect-video mb-3">
+                            <iframe src="https://www.youtube.com/embed/Spb-j5k2-eY" title="Vídeo da Técnica 1: Liberação de Agarrão de Pulso (Mesmo Lado)" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                        <p class="technique-description-text">Se o agressor segurar seu pulso com a mão do mesmo lado (ex: mão direita dele no seu pulso direito), o ponto fraco da pegada é entre o polegar e os outros dedos dele. Gire seu pulso vigorosamente na direção do polegar do agressor, puxando seu braço em um movimento circular e explosivo para cima e para fora. Simultaneamente, dê um passo para trás com a perna do mesmo lado para criar distância e desequilibrar o agressor. Esteja pronta para um contra-ataque imediato (chute, soco com a mão livre).</p>
+                        <div>
+                            <label for="notes-technique-yellow-1" class="form-label small">Suas Anotações:</label>
+                            <textarea id="notes-technique-yellow-1" data-technique-id="yellow_001" rows="3" class="form-control form-control-sm notes-area" placeholder="Ex: Lembrar da explosão no movimento..."></textarea>
+                            <button class="btn btn-sm btn-secondary mt-2 save-note-button" data-technique-id="yellow_001"><i class="fas fa-save me-2" aria-hidden="true"></i>Salvar Anotação</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title h5 mb-3">Técnica 2: Chute Frontal (Pisão - Reto)</h2>
+                        <div class="aspect-video mb-3">
+                           <iframe src="https://www.youtube.com/embed/5-wZPA2Q7mM" title="Vídeo da Técnica 2: Chute Frontal (Pisão - Reto)" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                        <p class="technique-description-text">O chute frontal (pisão) é um golpe potente para manter distância ou atingir pontos baixos do agressor (joelho, canela, virilha). A partir da postura de combate, levante o joelho da perna de trás (ou da frente, para um chute mais rápido e curto) em direção ao peito. Estenda a perna rapidamente para frente, atingindo o alvo com a sola do pé (calcanhar ou planta do pé). O quadril acompanha o movimento para gerar mais força. Retraia a perna rapidamente para a posição inicial ou para uma nova base. Mantenha a guarda alta durante todo o movimento.</p>
+                        <div>
+                            <label for="notes-technique-yellow-2" class="form-label small">Suas Anotações:</label>
+                            <textarea id="notes-technique-yellow-2" data-technique-id="yellow_002" rows="3" class="form-control form-control-sm notes-area" placeholder="Ex: Focar no uso do quadril e retorno rápido..."></textarea>
+                            <button class="btn btn-sm btn-secondary mt-2 save-note-button" data-technique-id="yellow_002"><i class="fas fa-save me-2" aria-hidden="true"></i>Salvar Anotação</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Página: Ver Anotações -->
+        <section id="view-notes-page" class="page-section">
+            <h1 class="h2 mb-4" style="color: var(--bs-primary);">Minhas Anotações</h1>
+            <div class="mb-5">
+                <h2 class="h4 mb-3" style="color: var(--bs-primary-hover);">Anotações da Faixa Branca</h2>
+                <div id="whiteBeltNotesContainer" class="vstack gap-3">
+                    <p class="text-muted-light">Nenhuma anotação para a Faixa Branca ainda.</p>
+                </div>
+            </div>
+            <div>
+                <h2 class="h4 mb-3" style="color: var(--bs-primary-hover);">Anotações da Faixa Amarela</h2>
+                <div id="yellowBeltNotesContainer" class="vstack gap-3">
+                    <p class="text-muted-light">Nenhuma anotação para a Faixa Amarela ainda.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Página: Questionário (Versão Aprimorada) -->
+<section id="quiz-page" class="page-section container">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold" style="color: var(--bs-primary);">Avalie Seu Conhecimento em Segurança</h1>
+        <p class="lead" style="color: var(--custom-text-muted-light);">Teste seus instintos e conhecimentos. Descubra seus pontos fortes e onde você pode melhorar.</p>
+    </div>
+
+    <!-- Container Principal do Quiz -->
+    <div id="quiz-container-wrapper" class="card shadow-sm">
+        <div class="card-body p-lg-5">
+            <!-- Cabeçalho do Quiz (Progresso e Contador) -->
+            <div id="quiz-header" class="mb-4" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 id="quiz-question-counter" class="h6 mb-0 text-muted-light">Pergunta 1 de 20</h2>
+                    <span id="quiz-timer" class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill"></span>
+                </div>
+                <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 8px;">
+                    <div id="quiz-progress-bar" class="progress-bar" style="width: 0%; background-color: var(--bs-primary);"></div>
+                </div>
+            </div>
+
+            <!-- Área onde as perguntas são carregadas -->
+            <div id="quiz-content">
+                <!-- Estado Inicial -->
+                <div id="quiz-start-screen" class="text-center">
+                    <i class="fa-solid fa-shield-halved fa-3x mb-3" style="color: var(--bs-primary);"></i>
+                    <h3 class="h4">Você está pronta para começar?</h3>
+                    <p class="text-muted-light mb-4">O questionário contém 20 perguntas de múltipla escolha. <br>Responda com base no que você faria em cada situação.</p>
+                    <button id="start-quiz-button" class="btn btn-primary btn-lg px-5">Iniciar Teste</button>
+                </div>
+            </div>
+
+            <!-- Área onde o formulário do quiz será injetado -->
+            <form id="quiz-form" style="display:none;"></form>
+
+        </div>
+    </div>
+
+    <!-- Card de Resultado (Aprimorado) -->
+    <div id="quiz-result" class="card shadow-sm mt-4" style="display:none;">
+        <div class="card-body text-center p-lg-5">
+            <div id="quiz-result-icon" class="mb-3">
+                <!-- Ícone do resultado será inserido aqui -->
+            </div>
+            <h2 id="quiz-result-title" class="card-title h3 mb-2"></h2>
+            <p id="quiz-score" class="lead fw-bold mb-3"></p>
+            <p id="quiz-feedback-message" class="mx-auto" style="max-width: 600px;"></p>
+            <button id="retake-quiz-button" class="btn btn-primary mt-3 px-4">
+                <i class="fa-solid fa-rotate-right me-2"></i>Tentar Novamente
+            </button>
+        </div>
+    </div>
+</section>
+
+        <!-- Página: Cenários -->
+        <section id="scenarios-page" class="page-section container">
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold" style="color: var(--bs-primary);">Análise de Cenários</h1>
+                <p class="lead text-muted">Aprenda a identificar, prevenir e reagir a ameaças comuns. A melhor luta é aquela que se evita.</p>
+            </div>
+            <div class="vstack gap-4">
+                <div class="card">
+                    <div class="card-body p-4">
+                        <h2 class="card-title h5 fw-bold">Cenário 1: Tentativa de Assalto na Rua</h2>
+                        <p class="technique-description-text">Você está caminhando em uma rua pouco movimentada. Um indivíduo se aproxima e anuncia um assalto, exigindo seus pertences. Ele não exibe uma arma claramente, mas age de forma intimidatória.</p>
+                        <h3 class="h6 fw-semibold mt-4" style="color: var(--bs-primary);">Plano de Ação Tático:</h3>
+                        <ul class="list-unstyled technique-description-text">
+                            <li class="mb-2"><i class="fas fa-angle-right fa-xs me-2 opacity-75"></i><strong>Mantenha a Calma e a Distância:</strong> Respire fundo. Levante as mãos abertas na altura do peito, em um gesto de "calma, não quero problemas". Isso te acalma, mostra ao agressor que você não é uma ameaça e prepara suas mãos para uma defesa rápida (essa posição é chamada de "fence" ou "escudo").</li>
+                            <li class="mb-2"><i class="fas fa-angle-right fa-xs me-2 opacity-75"></i><strong>Obedeça, mas com Controle:</strong> Informe seus movimentos. Diga: "Ok, vou pegar a carteira/celular". Entregue os objetos. Sua vida vale mais. Se possível, jogue os objetos um pouco para o lado, forçando o agressor a desviar a atenção e te dando uma fração de segundo para se afastar.</li>
+                            <li class="mb-2"><i class="fas fa-angle-right fa-xs me-2 opacity-75"></i><strong>Análise Contínua do Ambiente:</strong> Sem encarar, escaneie o ambiente. Observe as mãos do agressor, a presença de cúmplices e rotas de fuga (uma loja, uma esquina movimentada). Memorize características do agressor (roupas, altura, voz).</li>
+                            <li class="mb-2"><i class="fas fa-angle-right fa-xs me-2 opacity-75"></i><strong>Crie uma Janela de Fuga:</strong> Assim que o agressor estiver focado nos objetos, afaste-se com passos largos para trás, mantendo a visão periférica nele. Não dê as costas imediatamente. Corra para um local seguro assim que houver distância suficiente e chame a polícia (190).</li>
+                        </ul>
+                        <h4 class="h6 fw-semibold mt-3" style="color: #dc3545;">Ponto de Alerta: E se a situação escalar?</h4>
+                        <p class="technique-description-text small">Se o agressor tentar te agarrar, a situação muda de roubo para agressão física. A resposta deve ser explosiva e focada em criar uma oportunidade para escapar. Utilize as ferramentas mais simples e eficazes do Krav Maga: ataque aos pontos vulneráveis (olhos, garganta, genitais) e fuja na primeira oportunidade. A reação física é o último recurso, usado apenas para preservar sua integridade física.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body p-4">
+                        <h2 class="card-title h5 fw-bold">Cenário 2: Assédio em Transporte Público</h2>
+                        <p class="technique-description-text">Você está em um ônibus ou metrô e um passageiro começa a te assediar verbalmente e a invadir seu espaço pessoal, talvez com toques indesejados.</p>
+                        <h3 class="h6 fw-semibold mt-4" style="color: var(--bs-primary);">Plano de Ação Tático:</h3>
+                        <ul class="list-unstyled technique-description-text">
+                            <li class="mb-2"><i class="fas fa-angle-right fa-xs me-2 opacity-75"></i><strong>Crie uma Barreira e Use a Voz:</strong> Use sua bolsa ou mochila como um escudo entre você e a pessoa. Olhe diretamente para ela e diga em voz alta, clara e firme: "NÃO TOQUE EM MIM" ou "AFASTE-SE". A firmeza e o volume alto servem tanto para o agressor quanto para alertar os outros passageiros.</li>
+                            <li class="mb-2"><i class="fas fa-angle-right fa-xs me-2 opacity-75"></i><strong>Mude de Posição Estratégica:</strong> Levante-se e procure um local mais seguro: perto do motorista, de um grupo de mulheres, de uma câmera de segurança ou da porta de saída. Mover-se quebra o padrão do agressor e te coloca em vantagem.</li>
+                            <li class="mb-2"><i class="fas fa-angle-right fa-xs me-2 opacity-75"></i><strong>Exponha o Agressor:</strong> Se o comportamento continuar, não hesite em chamar atenção de forma explícita. "SOCORRO! ESTE HOMEM ESTÁ ME ASSediando!". A vergonha pública é uma ferramenta poderosa contra agressores que contam com o silêncio da vítima.</li>
+                            <li class="mb-2"><i class="fas fa-angle-right fa-xs me-2 opacity-75"></i><strong>Prepare-se para Agir:</strong> Se a ameaça se tornar física, esteja pronta para se defender. Use o ambiente a seu favor: apoie-se nas barras para ter estabilidade e use golpes curtos e eficazes, como cotoveladas e joelhadas.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Página: Referências -->
+        <section id="references-page" class="page-section">
+            <h1 class="h2 mb-4" style="color: var(--bs-primary);">Arquivos de Referência</h1>
+            <div class="vstack gap-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title h5">Estudo: Impacto Psicológico da Violência de Gênero</h2>
+                        <p class="technique-description-text">Análise sobre as consequências psicológicas da violência de gênero na vida das mulheres, abordando temas como transtorno de estresse pós-traumático (TEPT), depressão, ansiedade e a importância de redes de apoio e acompanhamento psicológico.</p>
+                        <a href="https://www.ipea.gov.br/portal/images/stories/PDFs/SIPS/sips_violencia_contra_mulheres.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-link btn-sm p-0" style="color: var(--bs-primary);">Ver estudo do IPEA (PDF) <i class="fas fa-external-link-alt fa-xs ms-1"></i></a>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title h5">Artigo: A História e Filosofia do Krav Maga</h2>
+                        <p class="technique-description-text">Um olhar aprofundado sobre as origens do Krav Maga com Imi Lichtenfeld em Israel na década de 1940. Sua evolução de um sistema de combate militar para uma técnica de autodefesa civil e os princípios que o norteiam: simplicidade, eficácia e o uso de reações instintivas para a sobrevivência.</p>
+                        <a href="https://kravmaga.com.br/historia/" target="_blank" rel="noopener noreferrer" class="btn btn-link btn-sm p-0" style="color: var(--bs-primary);">Ler mais na Fed. Sul Americana de Krav Maga <i class="fas fa-external-link-alt fa-xs ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Página: Psicologia -->
+        <section id="psychology-page" class="page-section">
+            <h1 class="h2 mb-4" style="color: var(--bs-primary);">Psicologia da Defesa Pessoal</h1>
+            <article class="card">
+                <div class="card-body">
+                    <h2 class="card-title h5 mb-3">Controle do Medo e Ansiedade</h2>
+                    <p class="technique-description-text">O medo é uma resposta inevitável e essencial à percepção de perigo. O objetivo no Krav Maga não é eliminá-lo, mas sim canalizá-lo para um "medo funcional". Sob estresse, o corpo libera adrenalina, causando reações como visão de túnel, exclusão auditória e perda de habilidades motoras finas. O treinamento combate isso através de:<br>• <strong>Técnicas de respiração tática:</strong> Respirações profundas e controladas para diminuir a frequência cardíaca e oxigenar o cérebro, permitindo maior clareza mental.<br>• <strong>Simulação de estresse:</strong> Treinar sob cansaço, com múltiplos agressores ou em cenários caóticos acostuma o corpo e a mente a operar sob pressão, transformando o pânico paralisante em um estado de alerta elevado e focado.</p>
+                    <h2 class="card-title h5 my-3">Tomada de Decisões Sob Pressão</h2>
+                    <p class="technique-description-text">Em uma situação de confronto, não há tempo para deliberação. A capacidade de tomar decisões rápidas e eficazes é crucial. O estresse degrada a cognição complexa, por isso o treinamento se concentra em:<br>• <strong>Princípios, não apenas técnicas:</strong> O Krav Maga ensina princípios universais (ex: ir da defesa ao ataque o mais rápido possível, atacar pontos vulneráveis) que se aplicam a inúmeras situações, simplificando a escolha da reação.<br>• <strong>Automatização de respostas:</strong> A repetição exaustiva em cenários variados cria "caminhos neurais" que tornam a resposta defensiva quase instintiva, contornando a análise consciente lenta e permitindo que você reaja de forma eficaz mesmo antes de processar completamente a ameaça. Reconhecer padrões de agressão (gatilhos) é fundamental para antecipar e agir preventivamente.</p>
+                </div>
+            </article>
+        </section>
+
+        <!-- Página: Sinais de Alerta -->
+        <section id="warnings-page" class="page-section">
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold" style="color: var(--bs-primary);">Sinais de Alerta em Relacionamentos</h1>
+                <p class="lead text-muted">Reconhecer os sinais é o primeiro passo para se proteger. Se você se identifica com um ou mais destes comportamentos, busque ajuda profissional.</p>
+            </div>
+        
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <!-- Card Controle Excessivo -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-gamepad me-2"></i>Controle Excessivo</h2>
+                            <p class="card-text small text-muted-light">Ele(a) controla suas roupas, amizades, redes sociais e horários. Quer saber onde você está e com quem em todos os momentos.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Isolamento -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-user-friends me-2"></i>Isolamento</h2>
+                            <p class="card-text small text-muted-light">Afasta você de amigos e familiares, criando dependência emocional e dificultando que você peça ajuda.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Ciúme Patológico -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-eye me-2"></i>Ciúme Patológico</h2>
+                            <p class="card-text small text-muted-light">Acessos de ciúme desproporcionais e sem motivo, acusações de infidelidade e desconfiança constante.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Críticas Constantes -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-thumbs-down me-2"></i>Críticas Constantes</h2>
+                            <p class="card-text small text-muted-light">Humilha, desvaloriza suas opiniões, aparência e conquistas, minando sua autoestima.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Manipulação (Gaslighting) -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-theater-masks me-2"></i>Manipulação (Gaslighting)</h2>
+                            <p class="card-text small text-muted-light">Distorce a realidade para fazer você duvidar de sua própria sanidade, memória e percepção dos fatos.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Explosões de Raiva -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-bomb me-2"></i>Explosões de Raiva</h2>
+                            <p class="card-text small text-muted-light">Intimida com gritos, socos em objetos ou comportamento agressivo por motivos insignificantes. Você sente medo de contrariá-lo(a).</p>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Card Responsabilização da Vítima -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-user-shield me-2"></i>Responsabilização da Vítima</h2>
+                            <p class="card-text small text-muted-light">Culpa você pelo comportamento agressivo dele(a). "Você me provocou", "Olha o que você me fez fazer".</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Pressão Sexual -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-heart-broken me-2"></i>Pressão Sexual</h2>
+                            <p class="card-text small text-muted-light">Força relações sexuais ou atos que você não quer, ignora seus "nãos" e não respeita seus limites.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Controle Financeiro -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-money-bill-wave me-2"></i>Controle Financeiro</h2>
+                            <p class="card-text small text-muted-light">Controla seu dinheiro, te proíbe de trabalhar ou exige que você preste contas de todos os seus gastos.</p>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Card Ameaças -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-exclamation-triangle me-2"></i>Ameaças</h2>
+                            <p class="card-text small text-muted-light">Ameaça machucar você, seus filhos, seus animais de estimação ou a si mesmo caso você pense em terminar.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Ciclo de Abuso -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-sync-alt me-2"></i>Ciclo de Abuso</h2>
+                            <p class="card-text small text-muted-light">Alterna entre fases de tensão, explosão (agressão) e "lua de mel" (arrependimento e promessas de mudança).</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Invasão de Privacidade -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title h5"><i class="fas fa-user-secret me-2"></i>Invasão de Privacidade</h2>
+                            <p class="card-text small text-muted-light">Lê suas mensagens, e-mails e redes sociais sem permissão. Segue você ou instala aplicativos espiões.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Página: Suporte -->
+        <section id="support-page" class="page-section">
+            <h1 class="h2 mb-4" style="color: var(--bs-primary);">Assistência e Suporte à Mulher</h1>
+            <p class="lead mb-4">Conheça os principais canais de denúncia, acolhimento e apoio disponíveis no Brasil.</p>
+            <div class="mb-3">
+                <button id="findSupportNearMeButton" class="btn btn-primary w-100 mb-4 py-2">
+                    <i class="fas fa-map-marker-alt me-2"></i>Encontrar Ajuda Perto de Mim (DEAMs e Centros de Referência)
+                </button>
+            </div>
+            <h2 class="h4 mb-3 mt-4" style="color: var(--bs-primary-hover);">Denúncia e Emergência</h2>
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="card-title h5"><i class="fas fa-phone-square-alt me-2" aria-hidden="true"></i> <a href="tel:190" class="text-decoration-none" style="color: inherit;">Ligue 190 – Polícia Militar</a></h3>
+                            <p class="technique-description-text small">Para emergências imediatas, risco à vida ou flagrante delito. Clique no número para ligar.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="card-title h5"><i class="fas fa-phone-alt me-2" aria-hidden="true"></i> <a href="tel:180" class="text-decoration-none" style="color: inherit;">Ligue 180 – Central de Atendimento à Mulher</a></h3>
+                            <p class="technique-description-text small">Clique no número para ligar. Serviço nacional, gratuito e confidencial que oferece escuta e orientação qualificada. Funciona 24 horas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ====== RODAPÉ DA APLICAÇÃO ====== -->
+    <footer class="text-center p-4 mt-5">
+        <p class="small mb-1">© <span id="currentYear"></span> Krav Maga Woman. Todos os direitos reservados.</p>
+        <p class="small opacity-75">Este aplicativo é uma ferramenta de apoio e informação. Em caso de perigo real, contate as autoridades.</p>
+    </footer>
+    
+    <!-- ====== BOTÃO FLUTUANTE DO WHATSAPP ====== -->
+    <a id="whatsapp-float-button" href="https://wa.me/5511999999999?text=Ol%C3%A1%2C%20vi%20o%20site%20Krav%20Maga%20Woman%20e%20gostaria%20de%20agendar%20uma%20conversa%20com%20a%20psic%C3%B3loga." class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Agendar conversa com psicóloga no WhatsApp" style="display: none;">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    
+    <!-- ====== CONTAINER PARA NOTIFICAÇÃO PROATIVA ====== -->
+    <div id="instructor-prompt-container" style="position: fixed; bottom: 1.25rem; left: 1.25rem; z-index: 1040; width: 100%; max-width: 320px;"></div>
+
+    <!-- ====== SCRIPTS EXTERNOS ====== -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <!-- ====== CONFIGURAÇÃO INICIAL (pré-módulo) ====== -->
+    <script>
+    // Anexa as variáveis de configuração ao objeto global 'window'
+    window.__firebase_config_str = `{
+        "apiKey": "AIzaSyBfVieHjJ9lq8sYnhn4J4AhWi4W7cx9cYk",
+        "authDomain": "krav-maga-woman.firebaseapp.com",
+        "databaseURL": "https://krav-maga-woman-default-rtdb.firebaseio.com/",
+        "projectId": "krav-maga-woman",
+        "storageBucket": "krav-maga-woman.appspot.com",
+        "messagingSenderId": "970804139681",
+        "appId": "1:970804139681:web:d27e7f113a85b9b6e82a3b"
+    }`;
+    window.__app_id_val = 'krav-maga-woman';
+</script>
+<!-- 
+    ===================================================================================
+    - O caminho 'js/main.js' assume que o arquivo está na pasta 'js'.
+    ===================================================================================
+-->
+<script type="module" src="js/main.js"></script>
+
+
+</body>
+</html>
+

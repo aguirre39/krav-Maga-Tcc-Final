@@ -1,0 +1,811 @@
+/*
+|--------------------------------------------------------------------------
+| 1. CONFIGURAÇÕES GLOBAIS E TEMAS
+|--------------------------------------------------------------------------
+| Define estilos base, fontes e as variáveis CSS para os temas
+| claro (light) e escuro (dark), controlando a paleta de cores de
+| toda a aplicação.
+|
+*/
+
+/* Estilos Globais do Body */
+body {
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Variáveis do Tema Claro (Light) */
+[data-bs-theme="light"] {
+    --bs-primary: #db2777; /* pink-600 */
+    --bs-primary-rgb: 219, 39, 119;
+    --bs-primary-hover: #c5226c; /* darker pink */
+    --bs-secondary: #6c757d;
+    --bs-body-bg: #f0f2f5;
+    --bs-body-color: #1f2937;
+    --bs-border-color: #dee2e6;
+    --custom-card-bg: #ffffff;
+    --custom-card-color: #1f2937;
+    --custom-input-bg: #ffffff;
+    --custom-input-color: #111827;
+    --custom-input-border: #ced4da;
+    --custom-input-placeholder: #6B7280;
+    --custom-nav-link-color: #374151;
+    --custom-nav-link-hover-bg: #fbcfe8;
+    --custom-nav-link-hover-color: #db2777;
+    --custom-nav-active-bg: #db2777;
+    --custom-nav-active-color: white;
+    --custom-text-pink: #ec4899; /* pink-400 */
+    --custom-text-muted-light: #4b5563; /* gray-600 */
+    --custom-header-bg: #ffffff;
+    --custom-header-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
+    --custom-footer-bg: #e5e7eb;
+    --custom-footer-color: #374151;
+    --custom-loader-border: #e5e7eb;
+    --custom-loader-border-top: #ec4899;
+    --custom-modal-content-bg: #ffffff;
+    --custom-modal-content-color: #1f2937;
+    --custom-emergency-zone-bg: rgba(254, 226, 226, 1);
+    --custom-emergency-zone-border: #ef4444;
+    --custom-emergency-zone-text: #b91c1c;
+    --custom-emergency-zone-header: #dc2626;
+    --custom-chat-bg: #f8f9fa;
+    --custom-chat-user-msg-bg: #e9ecef;
+    --custom-chat-bot-msg-bg: var(--bs-primary);
+    --custom-chat-bot-msg-color: white;
+    --custom-chat-input-bg: #ffffff;
+    --community-chat-received-bg: #e9ecef;
+    --community-chat-received-color: #1f2937;
+    --community-chat-sent-bg: var(--bs-primary);
+    --community-chat-sent-color: white;
+}
+
+/* Variáveis do Tema Escuro (Dark) */
+[data-bs-theme="dark"] {
+    --bs-primary: #ec4899; /* pink-500 */
+    --bs-primary-rgb: 236, 72, 153;
+    --bs-primary-hover: #d03c8a; /* darker pink */
+    --bs-secondary: #6c757d;
+    --bs-body-bg: #1f2937; /* gray-800 */
+    --bs-body-color: #d1d5db; /* gray-300 */
+    --bs-border-color: #4b5563; /* gray-600 */
+    --custom-card-bg: #374151; /* gray-700 */
+    --custom-card-color: #d1d5db; /* gray-300 */
+    --custom-input-bg: #374151; /* gray-700 */
+    --custom-input-color: #ffffff;
+    --custom-input-border: #4b5563; /* gray-600 */
+    --custom-input-placeholder: #9ca3af; /* gray-400 */
+    --custom-nav-link-color: #d1d5db; /* gray-300 */
+    --custom-nav-link-hover-bg: #ec4899; /* pink-500 */
+    --custom-nav-link-hover-color: white;
+    --custom-nav-active-bg: #ec4899; /* pink-500 */
+    --custom-nav-active-color: white;
+    --custom-text-pink: #f472b6; /* pink-400 */
+    --custom-text-muted-light: #9ca3af; /* gray-400 */
+    --custom-header-bg: #111827; /* gray-900 */
+    --custom-header-shadow: 0 1px 3px 0 rgba(0,0,0,0.25);
+    --custom-footer-bg: #111827; /* gray-900 */
+    --custom-footer-color: #9ca3af; /* gray-400 */
+    --custom-loader-border: #4B5563;
+    --custom-loader-border-top: #ec4899;
+    --custom-modal-content-bg: #1f2937;
+    --custom-modal-content-color: #d1d5db;
+    --custom-emergency-zone-bg: rgba(153, 27, 27, 0.3);
+    --custom-emergency-zone-border: #ef4444;
+    --custom-emergency-zone-text: #f87171;
+    --custom-emergency-zone-header: #fca5a5;
+    --custom-chat-bg: #2c3e50;
+    --custom-chat-user-msg-bg: #374151;
+    --custom-chat-bot-msg-bg: var(--bs-primary);
+    --custom-chat-bot-msg-color: white;
+    --custom-chat-input-bg: #374151;
+    --community-chat-received-bg: #4b5563;
+    --community-chat-received-color: #d1d5db;
+    --community-chat-sent-bg: var(--bs-primary);
+    --community-chat-sent-color: white;
+}
+
+/*
+|--------------------------------------------------------------------------
+| 2. LAYOUT PRINCIPAL
+|--------------------------------------------------------------------------
+| Estilos para os elementos estruturais da página, como o cabeçalho,
+| rodapé e o sistema de navegação entre seções (páginas).
+|
+*/
+
+/* Controle de Visibilidade das Seções (Páginas) */
+.page-section { display: none; }
+#auth-page.page-section { min-height: 100vh; }
+#auth-page.page-section.active { display: flex; }
+.page-section.active { display: block; }
+
+/* Cabeçalho (Header) */
+#appHeader {
+    background-color: var(--custom-header-bg);
+    box-shadow: var(--custom-header-shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+#appHeader .navbar-brand { padding-top: 0; padding-bottom: 0; margin-right: 1rem; }
+.navbar-brand-logo { 
+    height: 50px; 
+    width: auto;
+    transition: transform 0.3s ease;
+}
+#appHeader .navbar-brand:hover .navbar-brand-logo {
+    transform: rotate(-10deg) scale(1.1);
+}
+
+#appHeader .nav-link { 
+    color: var(--custom-nav-link-color); 
+    padding: 0.5rem 1rem; 
+    border-radius: 0.375rem; 
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    transition: color 0.3s ease-out;
+}
+
+#appHeader .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--custom-nav-link-hover-bg);
+    border-radius: 0.375rem;
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.3s ease-out;
+    z-index: -1;
+}
+
+#appHeader .nav-link:hover {
+    color: var(--custom-nav-link-hover-color);
+}
+
+#appHeader .nav-link:hover::before {
+    transform: scaleY(1);
+    transform-origin: top;
+}
+
+#appHeader .dropdown-item:hover { 
+    background-color: var(--custom-nav-link-hover-bg); 
+    color: var(--custom-nav-link-hover-color); 
+}
+
+#appHeader .nav-link.active { 
+    background-color: var(--custom-nav-active-bg); 
+    color: var(--custom-nav-active-color) !important; 
+    box-shadow: 0 0 10px rgba(var(--bs-primary-rgb), 0.4);
+}
+#appHeader .nav-link.active::before {
+    transform: scaleY(1);
+    background-color: var(--custom-nav-active-bg);
+}
+
+#appHeader .dropdown-menu { 
+    background-color: var(--custom-header-bg); 
+    border: 1px solid var(--bs-border-color); 
+    will-change: opacity, transform;
+}
+.dropdown-menu.show {
+    animation: slideDownFade 0.3s ease-out forwards;
+}
+
+#appHeader .dropdown-item { color: var(--custom-nav-link-color); }
+#appHeader .navbar-toggler { border-color: rgba(var(--bs-primary-rgb), 0.5); }
+[data-bs-theme="light"] #appHeader .navbar-toggler-icon { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23db2777' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"); }
+[data-bs-theme="dark"] #appHeader .navbar-toggler-icon { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23ec4899' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"); }
+
+/* Rodapé (Footer) */
+footer {
+    background-color: var(--custom-footer-bg);
+    color: var(--custom-footer-color);
+}
+
+/*
+|--------------------------------------------------------------------------
+| 3. COMPONENTES REUTILIZÁVEIS
+|--------------------------------------------------------------------------
+| Estilização para componentes genéricos usados em várias partes da
+| aplicação, como cards, botões, modais, inputs e o loader.
+|
+*/
+
+/* Loader de Carregamento */
+.loader {
+    border: 5px solid var(--custom-loader-border);
+    border-top: 5px solid var(--custom-loader-border-top);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10000;
+}
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Cards */
+.card {
+    background-color: var(--custom-card-bg);
+    color: var(--custom-card-color);
+    border: 1px solid var(--bs-border-color);
+    transition: transform 0.2s ease-in-out;
+}
+.card:hover { transform: scale(1.03); }
+.card .card-title, .card h2, .card h3 { color: var(--custom-text-pink); }
+.card .text-muted-light { color: var(--custom-text-muted-light) !important; }
+
+/* Botões */
+.btn-primary { background-color: var(--bs-primary); border-color: var(--bs-primary); }
+.btn-primary:hover { background-color: var(--bs-primary-hover); border-color: var(--bs-primary-hover); }
+.btn-danger-active { background-color: #facc15; border-color: #facc15; color: #1f2937; }
+.btn-danger-active:hover { background-color: #eab308; border-color: #eab308; color: #1f2937; }
+#themeToggle, #themeToggleMobile { color: var(--custom-nav-link-color); }
+#themeToggle:hover, #themeToggleMobile:hover { background-color: var(--custom-nav-link-hover-bg) !important; color: var(--custom-nav-link-hover-color) !important; }
+
+/* Campos de Formulário (Inputs) */
+.form-control { background-color: var(--custom-input-bg); color: var(--custom-input-color); border: 1px solid var(--custom-input-border); }
+.form-control::placeholder { color: var(--custom-input-placeholder); }
+.form-control:focus { background-color: var(--custom-input-bg); color: var(--custom-input-color); border-color: var(--bs-primary); box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25); }
+.notes-area-view { background-color: var(--custom-input-bg); color: var(--custom-input-color); border: 1px solid var(--custom-input-border); padding: 0.375rem 0.75rem; font-size: 1rem; font-weight: 400; line-height: 1.5; border-radius: 0.375rem; }
+
+/* Modais */
+.modal-content { background-color: var(--custom-modal-content-bg); color: var(--custom-modal-content-color); }
+.modal-header { border-bottom-color: var(--bs-border-color); }
+.modal-footer { border-top-color: var(--bs-border-color); }
+
+/* Pop-up de Notificação */
+.notification-popup { background-color: var(--custom-card-bg); border: 1px solid var(--bs-border-color); color: var(--custom-card-color); padding: 1rem; border-radius: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 300px; opacity: 0; transform: translateY(20px); transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: opacity, transform; }
+.notification-popup.show { opacity: 1; transform: translateY(0); }
+[data-bs-theme="dark"] .notification-popup { background-color: rgba(31, 41, 55, 0.9); backdrop-filter: blur(5px); border-color: rgba(75, 85, 99, 0.7); }
+
+/*
+|--------------------------------------------------------------------------
+| 4. ESTILOS ESPECÍFICOS DE PÁGINAS E SEÇÕES
+|--------------------------------------------------------------------------
+| Estilos aplicados a seções ou páginas específicas, como Autenticação,
+| Dashboard (Zona de Emergência), Anotações, Chat, etc.
+|
+*/
+
+/* Página de Autenticação */
+#auth-page > div { background-color: var(--custom-card-bg); color: var(--custom-card-color); padding: 2rem; border-radius: 0.5rem; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15); }
+.auth-page-logo { display: block; margin-left: auto; margin-right: auto; max-height: 300px; width: auto; margin-bottom: 1.5rem; }
+#auth-page .form-label { color: var(--custom-card-color); }
+#auth-page p { color: var(--custom-text-muted-light); }
+#auth-page a { color: var(--bs-primary); }
+#auth-page a:hover { color: var(--bs-primary-hover); }
+
+/* Logo do Dashboard */
+.dashboard-logo {
+    max-height: 250px;
+    width: auto;
+}
+
+/* Seção de Emergência (Dashboard) */
+.emergency-zone { background-color: var(--custom-emergency-zone-bg); border-left: 4px solid var(--custom-emergency-zone-border); color: var(--custom-emergency-zone-text); padding: 1.5rem; border-radius: 0.375rem; margin-bottom: 2rem; }
+.emergency-zone h2 { color: var(--custom-emergency-zone-header); }
+.emergency-zone .text-muted-custom { color: var(--bs-body-color); opacity: 0.8; }
+[data-bs-theme="dark"] .emergency-zone .text-muted-custom { color: var(--bs-body-color); opacity: 0.7; }
+.emergency-zone .list-disc { list-style-type: disc; padding-left: 1.5rem; }
+.emergency-status { font-size: 0.9rem; margin-top: 0.5rem; }
+[data-bs-theme="dark"] .emergency-status { color: #fcd34d; }
+[data-bs-theme="light"] .emergency-status { color: #ca8a04; }
+#contactsList > div { background-color: var(--custom-input-bg); color: var(--custom-input-color); padding: 0.5rem 1rem; border-radius: 0.375rem; border: 1px solid var(--custom-input-border); }
+#contactsList .remove-contact-btn { color: #dc3545; }
+#contactsList .remove-contact-btn:hover { color: #bb2d3b; }
+
+/* Páginas de Técnicas e Conteúdo */
+.technique-description-text { margin-bottom: 1rem; line-height: 1.6; color: var(--bs-body-color); }
+.aspect-video { border-radius: 0.375rem; overflow: hidden; }
+.aspect-video img, .aspect-video iframe { width: 100%; height: auto; object-fit: cover; aspect-ratio: 16 / 9; background-color: #6c757d; }
+
+/* Página de Anotações */
+.note-card { background-color: var(--custom-card-bg); border: 1px solid var(--bs-border-color); color: var(--custom-card-color); }
+.note-card h3 { color: var(--custom-text-pink); font-size: 1.1rem; }
+.note-card .timestamp { font-size: 0.75rem; color: var(--custom-text-muted-light); }
+.note-card .note-text-display { white-space: pre-wrap; color: var(--custom-card-color); }
+
+/*
+|--------------------------------------------------------------------------
+| 5. ESTILOS DE CHAT (INSTRUTOR, AVISOS, COMUNIDADE)
+|--------------------------------------------------------------------------
+*/
+
+/* Estilos Gerais de Chat */
+.chatbot-container { background-color: var(--custom-chat-bg); border-radius: 0.5rem; padding: 1rem; margin-top: 1.5rem; box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1); height: 100%; display: flex; flex-direction: column; }
+.chat-messages { flex-grow: 1; overflow-y: auto; padding: 0.5rem; margin-bottom: 1rem; background-color: var(--custom-input-bg); }
+.chat-input-group { display: flex; gap: 0.5rem; }
+.chat-message { padding: 0.75rem 1rem; border-radius: 1rem; margin-bottom: 0.5rem; max-width: 85%; word-wrap: break-word; line-height: 1.5; }
+.chat-message.user { background-color: var(--bs-primary); color: white; border-bottom-right-radius: 0.25rem; align-self: flex-end; }
+.chat-message.bot { background-color: var(--custom-chat-user-msg-bg); color: var(--custom-card-color); border-bottom-left-radius: 0.25rem; align-self: flex-start; }
+.chat-message a { color: var(--bs-primary); text-decoration: underline; }
+[data-bs-theme="dark"] .chat-message.bot a { color: var(--custom-text-pink); }
+.quick-reply-container { margin-bottom: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+.quick-reply-btn { background-color: var(--custom-input-bg); color: var(--custom-card-color); border: 1px solid var(--bs-border-color); font-size: 0.8rem; }
+.quick-reply-btn:hover { background-color: var(--custom-chat-user-msg-bg); border-color: var(--custom-chat-user-msg-bg); }
+#chatInputWarning, #instructorChatInput { flex-grow: 1; background-color: var(--custom-chat-input-bg); color: var(--custom-input-color); border-color: var(--custom-input-border); }
+#chatInputWarning::placeholder, #instructorChatInput::placeholder { color: var(--custom-input-placeholder); }
+#chatInputWarning:focus, #instructorChatInput:focus { background-color: var(--custom-chat-input-bg); color: var(--custom-input-color); border-color: var(--bs-primary); box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25); }
+#sendWarningChatButton, #sendInstructorChatButton { flex-shrink: 0; }
+
+/* Animação de "digitando..." do Bot */
+.chat-message.bot.loading { display: flex; align-items: center; }
+.chat-message.bot.loading .dot-flashing { position: relative; width: 8px; height: 8px; border-radius: 5px; background-color: var(--custom-card-color); color: var(--custom-card-color); animation: dotFlashing 1s infinite linear alternate; animation-delay: .5s; }
+.chat-message.bot.loading .dot-flashing::before, .chat-message.bot.loading .dot-flashing::after { content: ''; display: inline-block; position: absolute; top: 0; width: 8px; height: 8px; border-radius: 5px; background-color: var(--custom-card-color); color: var(--custom-card-color); animation: dotFlashing 1s infinite alternate; }
+.chat-message.bot.loading .dot-flashing::before { left: -12px; animation-delay: 0s; }
+.chat-message.bot.loading .dot-flashing::after { left: 12px; animation-delay: 1s; }
+@keyframes dotFlashing { 0% { opacity: 0.5; } 50%, 100% { opacity: 1; } }
+
+/* Modal do Chat do Instrutor */
+#instructorChatModal .modal-dialog { margin: 0; width: 100%; max-width: none; height: 100%; display: flex; align-items: flex-end; }
+#instructorChatModal .modal-content { height: 90vh; border-radius: 1.5rem 1.5rem 0 0; border: none; }
+@media (min-width: 576px) {
+    #instructorChatModal .modal-dialog { max-width: 500px; margin: 1.75rem auto; height: auto; align-items: center; }
+    #instructorChatModal .modal-content { height: 80vh; max-height: 650px; border-radius: 1.5rem; }
+}
+
+/* Chat da Comunidade */
+.community-chat-card { background-color: var(--custom-card-bg); border: 1px solid var(--bs-border-color); border-radius: 0.5rem; padding: 1rem; }
+#communityChatMessagesArea { height: 350px; overflow-y: auto; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--custom-input-border); background-color: var(--custom-input-bg); border-radius: 0.375rem; display: flex; flex-direction: column; }
+.community-chat-message-item { padding: 0.6rem 0.9rem; border-radius: 1rem; margin-bottom: 0.75rem; max-width: 75%; word-wrap: break-word; display: flex; flex-direction: column; line-height: 1.4; }
+.community-chat-message-item.sent { background-color: var(--community-chat-sent-bg); color: var(--community-chat-sent-color); margin-left: auto; align-items: flex-end; border-bottom-right-radius: 0.25rem; }
+.community-chat-message-item.received { background-color: var(--community-chat-received-bg); color: var(--custom-card-color); margin-right: auto; align-items: flex-start; border-bottom-left-radius: 0.25rem; }
+.community-chat-message-item .message-meta { font-size: 0.7rem; opacity: 0.85; margin-bottom: 0.2rem; display: flex; justify-content: space-between; width: 100%; }
+.community-chat-message-item.sent .message-meta { color: rgba(255,255,255,0.8); }
+[data-bs-theme="light"] .community-chat-message-item.sent .message-meta { color: rgba(255,255,255,0.9); }
+.community-chat-message-item.received .message-meta { color: var(--custom-text-muted-light); }
+.community-chat-message-item .sender-name { font-weight: 600; margin-right: 8px; }
+.community-chat-message-item .message-text-content { font-size: 0.9rem; text-align: left; width: 100%; }
+#communityChatInput { flex-grow: 1; background-color: var(--custom-input-bg); color: var(--custom-input-color); border-color: var(--custom-input-border); }
+#communityChatInput::placeholder { color: var(--custom-input-placeholder); }
+#communityChatInput:focus { background-color: var(--custom-input-bg); color: var(--custom-input-color); border-color: var(--bs-primary); box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25); }
+#sendCommunityChatMessageButton { flex-shrink: 0; }
+
+/*
+|--------------------------------------------------------------------------
+| 6. ANIMAÇÕES
+|--------------------------------------------------------------------------
+*/
+
+@keyframes pulseLogo { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+.logo-pulse-animation { animation: pulseLogo 2.5s infinite ease-in-out; }
+
+@keyframes slideDownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulseEmergencyButton { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); } }
+.emergency-button-pulse-animation { animation: pulseEmergencyButton 2s infinite; }
+.btn-danger-active.emergency-button-pulse-animation, .btn-danger-active { animation: none !important; }
+
+/*
+|--------------------------------------------------------------------------
+| 7. PÁGINA DE RASTREAMENTO (TRACKER.HTML)
+|--------------------------------------------------------------------------
+*/
+
+.tracker-page body, .tracker-page {
+    height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow: hidden;
+}
+
+.tracker-page #map-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.tracker-page #map {
+    width: 100%;
+    height: 100%;
+}
+
+.tracker-page #status-banner {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #333;
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    max-width: 90%;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.tracker-page #status-banner.cancelled {
+    background-color: #dc3545;
+    color: white;
+}
+
+.tracker-page #status-banner.tracking {
+    background-color: #198754;
+    color: white;
+}
+
+.pulsing-dot-icon {
+    background-color: #ec4899;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7);
+    animation: pulse-dot 1.75s infinite cubic-bezier(0.66, 0, 0, 1);
+    border: 2px solid white;
+}
+
+@keyframes pulse-dot {
+    to {
+        box-shadow: 0 0 0 15px rgba(236, 72, 153, 0);
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| 8. MELHORIAS DE FORMULÁRIO E FEEDBACK
+|--------------------------------------------------------------------------
+*/
+.form-control.is-invalid ~ .invalid-feedback {
+    display: block;
+}
+
+.whatsapp-float {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    bottom: 40px;
+    right: 40px;
+    background-color: #25d366;
+    color: #FFF;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 30px;
+    box-shadow: 2px 2px 3px #999;
+    z-index: 1000;
+    display: none; 
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.whatsapp-float:hover {
+    transform: scale(1.1);
+    color: #FFF;
+}
+
+
+#warnings-page .card-title i {
+    color: var(--bs-danger) !important;
+}
+
+/* Estilos específicos da página de rastreamento */
+#recenter-map-btn {
+    position: absolute;
+    bottom: 95px;
+    right: 10px;
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+#recenter-map-btn:hover {
+    background-color: white;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+#recenter-map-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+#recenter-map-btn svg {
+    color: #333;
+}
+#last-update-timestamp {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-family: sans-serif;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+#last-update-timestamp.visible {
+    opacity: 1;
+}
+#security-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+#countdown-timer {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+#status-banner.panic {
+    background-color: #dc3545;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 12px;
+    text-align: center;
+    animation: pulse-red-banner 1.5s infinite;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+}
+@keyframes pulse-red-banner {
+    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(220, 53, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    padding: 15px;
+    backdrop-filter: blur(5px);
+}
+.modal-content-custom {
+    background-color: #212529;
+    color: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+#emergency-options-modal .modal-content-custom {
+     animation: fadeIn 0.3s ease-out, shake-horizontal 0.5s ease-in-out;
+     border: 2px solid #dc3545;
+}
+@keyframes shake-horizontal {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+.modal-content-custom h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    color: #e83e8c;
+}
+.modal-content-custom p {
+    margin-bottom: 25px;
+    color: #adb5bd;
+}
+.modal-buttons, .modal-emergency-buttons {
+    display: flex;
+    gap: 15px;
+}
+.modal-buttons {
+    justify-content: center;
+}
+.modal-emergency-buttons {
+    flex-direction: column;
+}
+.modal-buttons button, .modal-emergency-buttons a, .modal-emergency-buttons button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease-in-out;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    text-transform: uppercase;
+}
+.modal-buttons button:hover, .modal-emergency-buttons a:hover, .modal-emergency-buttons button:hover {
+     transform: translateY(-2px);
+     box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+#security-check-yes {
+    background-color: #28a745;
+    color: white;
+}
+#security-check-no {
+    background-color: #dc3545;
+    color: white;
+}
+.emergency-option-critical {
+    background-color: #dc3545;
+    color: white !important;
+}
+.emergency-option-secondary {
+    background-color: #fd7e14;
+    color: white !important;
+}
+.emergency-option-close {
+    background-color: #6c757d;
+    color: white !important;
+}
+
+/*
+|--------------------------------------------------------------------------
+| 10. ESTILOS DA PÁGINA DE QUESTIONÁRIO (DESIGN INTERATIVO)
+|--------------------------------------------------------------------------
+*/
+
+/* Container do Quiz */
+#quiz-container-wrapper {
+    transition: all 0.3s ease;
+}
+
+/* Estilo das Opções do Quiz */
+#quiz-form .form-check {
+    margin-bottom: 0.75rem;
+    padding: 0;
+}
+
+#quiz-form .form-check-label {
+    display: block;
+    width: 100%;
+    padding: 0.85rem 1.25rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-weight: 500;
+}
+
+#quiz-form .form-check-input {
+    display: none; /* Esconde o botão de rádio padrão */
+}
+
+/* Efeito Hover nas Opções */
+#quiz-form .form-check-label:hover {
+    border-color: var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+    transform: translateY(-2px);
+}
+
+/* Estilo da Opção Selecionada */
+#quiz-form .form-check-input:checked + .form-check-label {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+    box-shadow: 0 4px 15px rgba(var(--bs-primary-rgb), 0.2);
+}
+
+/* Feedback Visual Após o Envio */
+#quiz-form.submitted .form-check-label {
+    cursor: default;
+    opacity: 0.7;
+}
+#quiz-form.submitted .form-check-label:hover {
+    transform: none;
+    background-color: transparent;
+}
+[data-bs-theme="dark"] #quiz-form.submitted .form-check-label:hover {
+    background-color: transparent;
+}
+
+
+/* Estilo da Resposta Correta */
+#quiz-form.submitted .form-check-label.correct-answer {
+    background-color: #198754; /* Verde sucesso */
+    border-color: #198754;
+    color: white;
+    opacity: 1;
+}
+
+/* Estilo da Resposta Incorreta Selecionada pelo Usuário */
+#quiz-form.submitted .form-check-input:checked + .form-check-label.incorrect-answer {
+    background-color: #dc3545; /* Vermelho perigo */
+    border-color: #dc3545;
+    color: white;
+    opacity: 1;
+    text-decoration: line-through;
+}
+
+/* Botão de Submissão */
+#submit-quiz-button {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1.1rem;
+}
+
+/* Card de Resultado */
+#quiz-result {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    border-top: 4px solid var(--bs-primary);
+}
+
+#quiz-result.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Cores da borda do card de resultado conforme a pontuação */
+#quiz-result.result-excellent { border-top-color: #198754; } /* Verde */
+#quiz-result.result-good { border-top-color: #0dcaf0; } /* Ciano */
+#quiz-result.result-average { border-top-color: #ffc107; } /* Amarelo */
+#quiz-result.result-poor { border-top-color: #dc3545; } /* Vermelho */
+
+#quiz-result-icon i {
+    font-size: 3rem;
+    padding: 1.5rem;
+    border-radius: 50%;
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+#quiz-result.result-excellent #quiz-result-icon i { color: #198754; background-color: rgba(25, 135, 84, 0.1); }
+#quiz-result.result-good #quiz-result-icon i { color: #0dcaf0; background-color: rgba(13, 202, 240, 0.1); }
+#quiz-result.result-average #quiz-result-icon i { color: #ffc107; background-color: rgba(255, 193, 7, 0.1); }
+#quiz-result.result-poor #quiz-result-icon i { color: #dc3545; background-color: rgba(220, 53, 69, 0.1); }
+
+/* Estilo para destacar perguntas não respondidas */
+.question-container.unanswered {
+    border: 2px solid var(--bs-danger);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    background-color: rgba(220, 53, 69, 0.05);
+    margin: -1rem; /* Ajuste para compensar o padding */
+    margin-bottom: 1rem !important; /* Garante o espaçamento inferior */
+}
